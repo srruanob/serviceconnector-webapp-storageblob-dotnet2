@@ -9,8 +9,8 @@ variables:
   dotnetVersion: '9.x'
 
   # Completar posteriormente
-  azureSubscription: 'NOMBRE-DE-TU-SERVICE-CONNECTION'
-  appName: 'NOMBRE-DE-TU-APP-SERVICE'
+  azureSubscription: 'MIA_Connection'
+  appName: 'storageaccountsrrb'
 
 steps:
 

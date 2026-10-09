@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 
@@ -9,10 +10,24 @@ namespace WebStorageSample
 {
     public class StorageHelper
     {
+        // En local: saltamos la Managed Identity (tu PC no es una VM de Azure) y usamos tu az login.
+        // En App Service: Azure define WEBSITE_SITE_NAME y ahí sí usamos la Managed Identity.
+        public static TokenCredential GetCredential()
+        {
+            bool enAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+
+            return enAzure
+                ? new DefaultAzureCredential()
+                : new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                {
+                    ExcludeManagedIdentityCredential = true
+                });
+        }
+
         static public async Task UploadBlob(string containerEndpoint, string containerName, string blobName, string blobContents)
         {
             var blobContainerUri = new Uri(new Uri(containerEndpoint), containerName);
-            BlobContainerClient containerClient = new BlobContainerClient(blobContainerUri, new DefaultAzureCredential());
+            BlobContainerClient containerClient = new BlobContainerClient(blobContainerUri, GetCredential());
 
             try
             {
@@ -29,16 +44,16 @@ namespace WebStorageSample
                     await blobClient.UploadAsync(stream, overwrite: true);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw; // "throw;" y no "throw e;" para no perder el stack trace (adiós warning CA2200)
             }
         }
 
         static public async Task<string> GetBlob(string containerEndpoint, string containerName, string blobName)
         {
             var blobContainerUri = new Uri(new Uri(containerEndpoint), containerName);
-            BlobContainerClient containerClient = new BlobContainerClient(blobContainerUri, new DefaultAzureCredential());
+            BlobContainerClient containerClient = new BlobContainerClient(blobContainerUri, GetCredential());
 
             try
             {
@@ -61,9 +76,9 @@ namespace WebStorageSample
                 }
                 return "";
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
     }

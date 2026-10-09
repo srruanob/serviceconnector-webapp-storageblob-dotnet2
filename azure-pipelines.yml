@@ -1,0 +1,64 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetVersion: '9.x'
+
+  # Completar posteriormente
+  azureSubscription: 'NOMBRE-DE-TU-SERVICE-CONNECTION'
+  appName: 'NOMBRE-DE-TU-APP-SERVICE'
+
+steps:
+
+# 1. Instalar .NET 9
+- task: UseDotNet@2
+  displayName: 'Instalar .NET 9 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '$(dotnetVersion)'
+
+# 2. Restaurar dependencias
+- task: DotNetCoreCLI@2
+  displayName: 'Restaurar dependencias'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+# 3. Configurar ambiente de producción
+- powershell: |
+    Copy-Item ".env.production" ".env" -Force
+  displayName: 'Configurar .env de producción'
+
+# 4. Compilar
+- task: DotNetCoreCLI@2
+  displayName: 'Compilar aplicación'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-restore'
+
+
+
+
+
+# 5. Publicar
+- task: DotNetCoreCLI@2
+  displayName: 'Publicar aplicación'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish --no-build'
+    zipAfterPublish: true
+
+# 6. Desplegar en Azure App Service
+- task: AzureWebApp@1
+  displayName: 'Desplegar en Azure App Service'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appType: 'webApp'
+    appName: '$(appName)'
+    package: '$(Build.ArtifactStagingDirectory)/publish/**/*.zip'

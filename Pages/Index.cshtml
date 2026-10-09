@@ -1,10 +1,42 @@
 ﻿@page
-@model IndexModel
+@model WebStorageSample.Pages.IndexModel
+ 
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Azure Blob Storage";
 }
-
+ 
 <div class="text-center">
-    <h1 class="display-4">@Html.DisplayFor(IndexModel => IndexModel.DisplayWords)</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+ 
+    <h1 class="display-5">Azure Blob Storage</h1>
+ 
+    <p>Seleccione una imagen para almacenarla en Azure Blob Storage.</p>
+ 
+    <form method="post" enctype="multipart/form-data">
+ 
+        <div class="mb-3">
+<input type="file"
+                   name="image"
+                   accept="image/*"
+                   class="form-control" />
+</div>
+ 
+        <button type="submit" class="btn btn-primary">
+            Subir imagen
+</button>
+ 
+    </form>
+ 
+    @if (!string.IsNullOrEmpty(Model.ImageBase64))
+    {
+<div class="mt-4">
+ 
+            <h3>Imagen almacenada en Blob Storage</h3>
+ 
+            <img src="data:@Model.ImageContentType;base64,@Model.ImageBase64"
+                 style="max-width:500px; max-height:500px;"
+                 class="img-fluid rounded shadow" />
+ 
+        </div>
+    }
+ 
 </div>

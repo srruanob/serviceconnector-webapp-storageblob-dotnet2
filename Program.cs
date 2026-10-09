@@ -13,6 +13,7 @@ namespace WebStorageSample
     {
         public static void Main(string[] args)
         {
+            DotNetEnv.Env.Load(); // carga el .env antes de leer la config
             CreateHostBuilder(args).Build().Run();
         }
 
